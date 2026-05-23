@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1A831D9B-1C13-477D-B919-8F198482BA49}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autigres.Core", "src\Autigres.Core\Autigres.Core.csproj", "{E1ADCC59-E592-4F86-B16D-CC1829D5F24A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autigres.Infrastructure", "src\Autigres.Infrastructure\Autigres.Infrastructure.csproj", "{11085535-2659-45D7-BB81-53B073B245BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autigres.API", "src\Autigres.API\Autigres.API.csproj", "{026BBE38-A2C8-49A8-BEAF-FC2BFF00E962}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0E4860B6-9A13-42C3-B2BD-0B1767D11DAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Autigres.Tests", "tests\Autigres.Tests\Autigres.Tests.csproj", "{3CF98CB0-82F5-4CD3-9F98-CB09E0A8139A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E1ADCC59-E592-4F86-B16D-CC1829D5F24A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1ADCC59-E592-4F86-B16D-CC1829D5F24A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1ADCC59-E592-4F86-B16D-CC1829D5F24A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1ADCC59-E592-4F86-B16D-CC1829D5F24A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11085535-2659-45D7-BB81-53B073B245BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11085535-2659-45D7-BB81-53B073B245BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11085535-2659-45D7-BB81-53B073B245BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11085535-2659-45D7-BB81-53B073B245BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{026BBE38-A2C8-49A8-BEAF-FC2BFF00E962}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{026BBE38-A2C8-49A8-BEAF-FC2BFF00E962}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{026BBE38-A2C8-49A8-BEAF-FC2BFF00E962}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{026BBE38-A2C8-49A8-BEAF-FC2BFF00E962}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CF98CB0-82F5-4CD3-9F98-CB09E0A8139A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CF98CB0-82F5-4CD3-9F98-CB09E0A8139A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CF98CB0-82F5-4CD3-9F98-CB09E0A8139A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CF98CB0-82F5-4CD3-9F98-CB09E0A8139A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E1ADCC59-E592-4F86-B16D-CC1829D5F24A} = {1A831D9B-1C13-477D-B919-8F198482BA49}
+		{11085535-2659-45D7-BB81-53B073B245BA} = {1A831D9B-1C13-477D-B919-8F198482BA49}
+		{026BBE38-A2C8-49A8-BEAF-FC2BFF00E962} = {1A831D9B-1C13-477D-B919-8F198482BA49}
+		{3CF98CB0-82F5-4CD3-9F98-CB09E0A8139A} = {0E4860B6-9A13-42C3-B2BD-0B1767D11DAA}
+	EndGlobalSection
+EndGlobal
