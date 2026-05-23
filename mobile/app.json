@@ -19,6 +19,7 @@
       }
     },
     "android": {
+      "package": "com.autigres.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -33,6 +34,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2d812477-b1e3-4891-b601-cad13feea317"
+      }
+    },
+    "owner": "juand2406"
   }
 }

@@ -2,5 +2,5 @@
 -- The pooling engine creates trips when two requests match; driver assignment happens separately.
 
 ALTER TABLE trips
-    MODIFY COLUMN driver_id  INT NULL,
-    MODIFY COLUMN vehicle_id INT NULL;
+    MODIFY COLUMN driver_id  INT UNSIGNED NULL,
+    MODIFY COLUMN vehicle_id INT UNSIGNED NULL;

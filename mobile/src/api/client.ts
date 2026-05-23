@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Android emulator → 10.0.2.2 mapea al localhost del host.
 // iOS simulator / dispositivo físico → usar la IP local de la máquina.
-const BASE_URL = 'http://100.87.198.125:5000/api';
+const BASE_URL = 'https://autigres.fly.dev/api';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
