@@ -25,6 +25,7 @@ public class TripConfiguration : IEntityTypeConfiguration<Trip>
         builder.Property(t => t.BaseFare).HasColumnName("base_fare").HasPrecision(10, 2);
         builder.Property(t => t.IsPoolingAllowed).HasColumnName("is_pooling_allowed");
         builder.Property(t => t.PaymentMethod).HasColumnName("payment_method").HasMaxLength(10);
+        builder.Property(t => t.ServiceTier).HasColumnName("service_tier").HasMaxLength(20).HasDefaultValue("economico");
         builder.Property(t => t.ArrivedAt).HasColumnName("arrived_at");
         builder.Property(t => t.StartedAt).HasColumnName("started_at");
         builder.Property(t => t.CompletedAt).HasColumnName("completed_at");

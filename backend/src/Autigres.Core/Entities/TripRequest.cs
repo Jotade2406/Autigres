@@ -16,6 +16,7 @@ public class TripRequest
     public TripRequestStatus Status { get; set; } = TripRequestStatus.Pending;
     public decimal? EstimatedFare { get; set; }
     public string PaymentMethod { get; set; } = "cash";
+    public string ServiceTier { get; set; } = "economico";
     public int MaxDetourSeconds { get; set; } = 300;
     public bool IsPoolingAllowed { get; set; } = true;
     public DateTime ExpiresAt { get; set; }

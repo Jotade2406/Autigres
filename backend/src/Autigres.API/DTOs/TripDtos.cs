@@ -10,7 +10,8 @@ public record CreateTripRequestBody(
     int MaxDetourSeconds = 300,
     bool IsPoolingAllowed = true,
     decimal? EstimatedFare = null,
-    string? PaymentMethod = null);
+    string? PaymentMethod = null,
+    string? ServiceTier = null);
 
 public record TripRequestStatusResponse(
     string Uuid,
@@ -36,7 +37,8 @@ public record TripResponse(
     double DestinationLat = 0,
     double DestinationLng = 0,
     string PaymentMethod = "cash",
-    string? ArrivedAt = null);
+    string? ArrivedAt = null,
+    string ServiceTier = "economico");
 
 public record DriverSummaryDto(
     string DriverUuid,

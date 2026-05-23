@@ -6,7 +6,7 @@ import { SafeAreaView }   from 'react-native-safe-area-context';
 import { StatusBar }      from 'expo-status-bar';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { LatLng }    from 'react-native-maps';
-import { Car, Users, Info, Banknote, QrCode } from 'lucide-react-native';
+import { Car, Users, Info, Banknote, QrCode, Crown, Check } from 'lucide-react-native';
 import { AuMap }          from '../../components/map/AuMap';
 import { tripsApi }               from '../../api/trips.api';
 import { getRouteInfo, estimateFare } from '../../services/directions';
@@ -17,6 +17,18 @@ import type { WaypointDto } from '../../api/types';
 
 type Props = NativeStackScreenProps<PassengerStackParamList, 'ConfirmTrip'>;
 type TripMode = 'individual' | 'shared';
+type ServiceId = 'economico' | 'confort' | 'premium';
+
+type IconComponent = React.ComponentType<{ size: number; color: string; strokeWidth?: number }>;
+
+const SERVICE_TIERS: readonly {
+  id: ServiceId; label: string; multiplier: number;
+  Icon: IconComponent; desc: string;
+}[] = [
+  { id: 'economico', label: 'Económico', multiplier: 1.00, Icon: Car,   desc: 'El más accesible'        },
+  { id: 'confort',   label: 'Confort',   multiplier: 1.35, Icon: Car,   desc: 'Más espacio y comodidad' },
+  { id: 'premium',   label: 'Premium',   multiplier: 1.75, Icon: Crown, desc: 'Experiencia top'          },
+] as const;
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 
@@ -44,7 +56,7 @@ function shadow(size: 'sm' | 'md' = 'md') {
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export function ConfirmTripScreen({ route, navigation }: Props) {
-  const { originLat, originLng, originAddress, destLat, destLng, destAddress } = route.params;
+  const { originLat, originLng, originAddress, destLat, destLng, destAddress, initialServiceTier } = route.params;
 
   const [polyline, setPolyline]       = useState<LatLng[]>([]);
   const [baseFare, setBaseFare]       = useState<number | null>(null);
@@ -53,6 +65,9 @@ export function ConfirmTripScreen({ route, navigation }: Props) {
   const [loading, setLoading]         = useState(false);
   const [tripMode, setTripMode]       = useState<TripMode>('individual');
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'qr'>('cash');
+  const [serviceTier, setServiceTier] = useState<ServiceId>(
+    (initialServiceTier as ServiceId | undefined) ?? 'economico'
+  );
 
   const routeWaypoints = useMemo<WaypointDto[]>(() => [
     { lat: originLat, lng: originLng, waypointType: 'pickup' },
@@ -70,9 +85,11 @@ export function ConfirmTripScreen({ route, navigation }: Props) {
     }).finally(() => setFetching(false));
   }, [originLat, originLng, destLat, destLng]);
 
-  const isShared    = tripMode === 'shared';
-  const sharedFare  = baseFare != null ? Math.round(baseFare * 0.7) : null;
-  const displayFare = isShared ? sharedFare : baseFare;
+  const isShared      = tripMode === 'shared';
+  const tierOpt       = SERVICE_TIERS.find(t => t.id === serviceTier)!;
+  const tieredBase    = baseFare != null ? baseFare * tierOpt.multiplier : null;
+  const sharedFare    = tieredBase != null ? Math.round(tieredBase * 0.7) : null;
+  const displayFare   = isShared ? sharedFare : (tieredBase != null ? Math.round(tieredBase) : null);
 
   const handleConfirm = async () => {
     setLoading(true);
@@ -84,6 +101,7 @@ export function ConfirmTripScreen({ route, navigation }: Props) {
         isPoolingAllowed: isShared,
         estimatedFare: displayFare ?? undefined,
         paymentMethod,
+        serviceTier,
       });
       navigation.replace('Matching', {
         requestUuid:   request.uuid,
@@ -136,7 +154,7 @@ export function ConfirmTripScreen({ route, navigation }: Props) {
             <View style={S.statsRow}>
               <View style={S.statBlock}>
                 <Text style={S.fareText}>
-                  {displayFare != null ? `Bs. ${Math.round(displayFare)}` : '—'}
+                  {displayFare != null ? `Bs. ${displayFare}` : '—'}
                 </Text>
                 <Text style={S.statLabel}>Tarifa estimada</Text>
               </View>
@@ -153,6 +171,33 @@ export function ConfirmTripScreen({ route, navigation }: Props) {
           )}
         </View>
 
+        {/* Service tier selector */}
+        <Text style={S.sectionLabel}>Tipo de servicio</Text>
+        {SERVICE_TIERS.map(opt => {
+          const on   = serviceTier === opt.id;
+          const fare = tieredBase != null
+            ? Math.round(baseFare! * opt.multiplier)
+            : null;
+          return (
+            <TouchableOpacity
+              key={opt.id}
+              style={[S.tierCard, on && S.tierCardOn]}
+              onPress={() => setServiceTier(opt.id)}
+              activeOpacity={0.8}
+            >
+              <opt.Icon size={22} color={on ? T.primary : T.mid} strokeWidth={1.5} />
+              <View style={{ flex: 1 }}>
+                <Text style={[S.tierLabel, on && S.tierLabelOn]}>{opt.label}</Text>
+                <Text style={S.tierDesc}>{opt.desc}</Text>
+              </View>
+              {fare != null && (
+                <Text style={[S.tierFare, on && S.tierFareOn]}>Bs. {fare}</Text>
+              )}
+              {on && <Check size={14} color={T.primary} strokeWidth={2.5} />}
+            </TouchableOpacity>
+          );
+        })}
+
         {/* Trip mode selector */}
         <Text style={S.sectionLabel}>Tipo de viaje</Text>
         <View style={S.modeRow}>
@@ -168,9 +213,9 @@ export function ConfirmTripScreen({ route, navigation }: Props) {
               Individual
             </Text>
             <Text style={S.modeDesc}>Solo vos, tarifa completa</Text>
-            {baseFare != null && (
+            {tieredBase != null && (
               <Text style={[S.modeFare, tripMode === 'individual' && { color: T.hi }]}>
-                Bs. {Math.round(baseFare)}
+                Bs. {Math.round(tieredBase)}
               </Text>
             )}
           </TouchableOpacity>
@@ -296,6 +341,20 @@ const S = StyleSheet.create({
   statDivider: { width: 1, height: 32, backgroundColor: T.border },
   etaText:   { fontSize: 20, fontWeight: '600', color: T.hi },
   statLabel: { fontSize: 11, color: T.lo, fontWeight: '500' },
+
+  // Tier selector
+  tierCard: {
+    flexDirection: 'row', alignItems: 'center', gap: T.sm,
+    backgroundColor: T.surf, borderRadius: 14,
+    borderWidth: 1.5, borderColor: T.border,
+    paddingVertical: T.sm, paddingHorizontal: T.md,
+  },
+  tierCardOn:  { borderColor: T.primary, backgroundColor: T.primaryDim },
+  tierLabel:   { fontSize: 14, fontWeight: '600', color: T.hi },
+  tierLabelOn: { color: T.primary },
+  tierDesc:    { fontSize: 11, color: T.lo, marginTop: 1 },
+  tierFare:    { fontSize: 14, fontWeight: '700', color: T.mid },
+  tierFareOn:  { color: T.primary },
 
   // Mode selector
   sectionLabel: {

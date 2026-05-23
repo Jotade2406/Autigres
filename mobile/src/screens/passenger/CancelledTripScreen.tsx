@@ -90,6 +90,7 @@ export function CancelledTripScreen({ route, navigation }: Props) {
     navigation.navigate('ConfirmTrip', {
       originLat, originLng, originAddress,
       destLat,   destLng,   destAddress,
+      initialServiceTier: selectedId,
     });
   };
 

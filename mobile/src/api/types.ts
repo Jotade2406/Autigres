@@ -40,6 +40,7 @@ export interface CreateTripRequestDto {
   isPoolingAllowed: boolean;
   estimatedFare?: number;
   paymentMethod?: 'cash' | 'qr';
+  serviceTier?: string;
 }
 
 export interface TripRequestStatusDto {
@@ -68,6 +69,7 @@ export interface TripResponseDto {
   destinationLng: number;
   paymentMethod?: 'cash' | 'qr';
   arrivedAt?: string;
+  serviceTier?: string;
 }
 
 export interface WaypointDto {

@@ -63,6 +63,7 @@ public class TripsController : ControllerBase
             MaxDetourSeconds = body.MaxDetourSeconds,
             IsPoolingAllowed = body.IsPoolingAllowed,
             PaymentMethod = body.PaymentMethod ?? "cash",
+            ServiceTier = body.ServiceTier ?? "economico",
             ExpiresAt = DateTime.UtcNow.AddMinutes(expirationMinutes),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -103,6 +104,7 @@ public class TripsController : ControllerBase
                 BaseFare           = soloFare,
                 IsPoolingAllowed   = request.IsPoolingAllowed,
                 PaymentMethod      = request.PaymentMethod,
+                ServiceTier        = body.ServiceTier ?? "economico",
             });
             await _tripRepo.AddPassengerToTripAsync(new TripPassenger
             {
@@ -389,8 +391,15 @@ public class TripsController : ControllerBase
         int oldRequesterTripId = requesterTp.TripId;
         int oldTargetTripId    = targetTp.TripId;
 
-        var requesterFare = Math.Round((requesterTp.FareAmount ?? 0m) * 0.8m, 0);
-        var targetFare    = Math.Round((targetTp.FareAmount    ?? 0m) * 0.8m, 0);
+        static decimal TierMultiplier(string tier) => tier switch
+        {
+            "confort" => 1.35m,
+            "premium" => 1.75m,
+            _         => 1.00m,
+        };
+
+        var requesterFare = Math.Round((requesterTp.FareAmount ?? 0m) * 0.8m * TierMultiplier(sr.RequesterRequest.ServiceTier), 0);
+        var targetFare    = Math.Round((targetTp.FareAmount    ?? 0m) * 0.8m * TierMultiplier(sr.TargetRequest.ServiceTier),    0);
 
         var combinedTrip = await _tripRepo.CreateAsync(new Trip
         {
@@ -404,6 +413,7 @@ public class TripsController : ControllerBase
             BaseFare           = requesterFare + targetFare,
             IsPoolingAllowed   = true,
             PaymentMethod      = sr.RequesterRequest.PaymentMethod,
+            ServiceTier        = sr.RequesterRequest.ServiceTier,
         });
 
         await _tripRepo.UpdateTripPassengerTripIdAsync(requesterTp.Id, combinedTrip.Id, requesterFare, 0, 1);
@@ -512,7 +522,8 @@ public class TripsController : ControllerBase
             trip.DestinationLat,
             trip.DestinationLng,
             trip.PaymentMethod,
-            trip.ArrivedAt?.ToString("O"));
+            trip.ArrivedAt?.ToString("O"),
+            trip.ServiceTier);
     }
 
     // Mirrors mobile estimateFare: Bs.5 base + Bs.2.50/km + Bs.0.50/min (30 km/h urban avg)

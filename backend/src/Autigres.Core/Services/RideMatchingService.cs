@@ -231,6 +231,13 @@ public class RideMatchingService : IMatchingService
         return _poolingEvaluator.Evaluate(poolReqA, poolReqB);
     }
 
+    private static decimal TierMultiplier(string tier) => tier switch
+    {
+        "confort"  => 1.35m,
+        "premium"  => 1.75m,
+        _          => 1.00m,
+    };
+
     private async Task<Trip> CreatePooledTripAsync(
         TripRequest reqA, TripRequest reqB, PoolingResult pooling)
     {
@@ -240,10 +247,13 @@ public class RideMatchingService : IMatchingService
         var originReq      = firstPickupReqId == reqA.Id ? reqA : reqB;
         var destinationReq = lastDropoffReqId  == reqA.Id ? reqA : reqB;
 
-        var farePerPassenger = _fareCalculator.CalculatePoolingFare(
+        var baseFarePerPassenger = _fareCalculator.CalculatePoolingFare(
             pooling.TotalRouteDistanceMeters,
             pooling.TotalRouteTimeSeconds,
             passengerCount: 2);
+
+        var fareA = Math.Round(baseFarePerPassenger * TierMultiplier(reqA.ServiceTier), 0);
+        var fareB = Math.Round(baseFarePerPassenger * TierMultiplier(reqB.ServiceTier), 0);
 
         var trip = await _tripRepository.CreateAsync(new Trip
         {
@@ -255,15 +265,17 @@ public class RideMatchingService : IMatchingService
             DestinationLng     = destinationReq.DestinationLng,
             DestinationAddress = destinationReq.DestinationAddress,
             TotalDistanceKm    = (decimal)(pooling.TotalRouteDistanceMeters / 1000.0),
-            BaseFare           = farePerPassenger * 2,
-            IsPoolingAllowed   = true
+            BaseFare           = fareA + fareB,
+            IsPoolingAllowed   = true,
+            ServiceTier        = originReq.ServiceTier,
+            PaymentMethod      = originReq.PaymentMethod,
         });
 
-        await AddTripPassengerAsync(trip, reqA, pooling, farePerPassenger, (int)pooling.AddedDetourSecondsA);
-        await AddTripPassengerAsync(trip, reqB, pooling, farePerPassenger, (int)pooling.AddedDetourSecondsB);
+        await AddTripPassengerAsync(trip, reqA, pooling, fareA, (int)pooling.AddedDetourSecondsA);
+        await AddTripPassengerAsync(trip, reqB, pooling, fareB, (int)pooling.AddedDetourSecondsB);
 
-        await _tripRepository.MatchRequestAsync(reqA.Id, farePerPassenger);
-        await _tripRepository.MatchRequestAsync(reqB.Id, farePerPassenger);
+        await _tripRepository.MatchRequestAsync(reqA.Id, fareA);
+        await _tripRepository.MatchRequestAsync(reqB.Id, fareB);
 
         return trip;
     }

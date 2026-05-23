@@ -19,6 +19,7 @@ public class Trip
     public decimal? BaseFare { get; set; }
     public bool IsPoolingAllowed { get; set; } = false;
     public string PaymentMethod { get; set; } = "cash";
+    public string ServiceTier { get; set; } = "economico";
     public DateTime? ArrivedAt { get; set; }
     public DateTime? StartedAt { get; set; }
     public DateTime? CompletedAt { get; set; }

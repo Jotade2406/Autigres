@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar }    from 'expo-status-bar';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { LatLng }    from 'react-native-maps';
-import { Car, Users, Flag, QrCode, Banknote, XCircle, CheckCircle, Check } from 'lucide-react-native';
+import { Car, Users, Flag, QrCode, Banknote, XCircle, CheckCircle, Check, Crown } from 'lucide-react-native';
 import { AuMap }          from '../../components/map/AuMap';
 import { SwipeButton }    from '../../components/ui/SwipeButton';
 import { driversApi }     from '../../api/drivers.api';
@@ -318,6 +318,11 @@ export function ActiveTripDriverScreen({ route, navigation }: Props) {
   const tripTypeBadgeColor = trip.isPoolingAllowed ? T.accentDim : T.primaryDim;
   const tripTypeBadgeText  = trip.isPoolingAllowed ? T.accent    : T.primary;
 
+  const tier = trip.serviceTier ?? 'economico';
+  const TIER_LABEL: Record<string, string> = { economico: 'Económico', confort: 'Confort', premium: 'Premium' };
+  const tierLabel = TIER_LABEL[tier] ?? tier;
+  const TierIcon  = tier === 'premium' ? Crown : Car;
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -354,9 +359,13 @@ export function ActiveTripDriverScreen({ route, navigation }: Props) {
                   {trip.isPoolingAllowed ? 'Compartido' : 'Individual'}
                 </Text>
               </View>
-              <View style={[S.badge, { backgroundColor: T.primaryDim }]}>
-                <Text style={[S.badgeText, { color: T.primary }]}>
-                  {passengers.length} pasajero{passengers.length !== 1 ? 's' : ''}
+              <View style={[S.badge, S.badgeRow2, { backgroundColor: T.primaryDim }]}>
+                <TierIcon size={10} color={T.primary} />
+                <Text style={[S.badgeText, { color: T.primary }]}>{tierLabel}</Text>
+              </View>
+              <View style={[S.badge, { backgroundColor: T.surf }]}>
+                <Text style={[S.badgeText, { color: T.lo }]}>
+                  {passengers.length} pas.
                 </Text>
               </View>
             </View>

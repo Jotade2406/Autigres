@@ -22,6 +22,7 @@ public class TripRequestConfiguration : IEntityTypeConfiguration<TripRequest>
         builder.Property(r => r.Status).HasColumnName("status").HasConversion<string>().HasMaxLength(20);
         builder.Property(r => r.EstimatedFare).HasColumnName("estimated_fare").HasPrecision(10, 2);
         builder.Property(r => r.PaymentMethod).HasColumnName("payment_method").HasMaxLength(10);
+        builder.Property(r => r.ServiceTier).HasColumnName("service_tier").HasMaxLength(20).HasDefaultValue("economico");
         builder.Property(r => r.MaxDetourSeconds).HasColumnName("max_detour_seconds");
         builder.Property(r => r.IsPoolingAllowed).HasColumnName("is_pooling_allowed");
         builder.Property(r => r.ExpiresAt).HasColumnName("expires_at");

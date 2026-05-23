@@ -29,6 +29,7 @@ export type PassengerStackParamList = {
   ConfirmTrip: {
     originLat: number; originLng: number; originAddress: string;
     destLat: number;   destLng: number;   destAddress: string;
+    initialServiceTier?: string;
   };
   Matching: {
     requestUuid:    string;
