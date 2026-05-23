@@ -7,7 +7,7 @@ const BASE_URL = 'https://autigres.fly.dev/api';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 10_000,
+  timeout: 30_000,
   headers: { 'Content-Type': 'application/json' },
 });
 
