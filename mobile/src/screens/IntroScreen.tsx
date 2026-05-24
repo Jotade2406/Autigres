@@ -2,15 +2,14 @@ import React, { useEffect } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
 
-const VIDEO_URL =
-  'https://drive.google.com/uc?export=download&id=1BR9h8A2V3UMDv1-umlsFByrJYvKbtVI6';
+const VIDEO_SOURCE = require('../../assets/intro.mp4');
 
 interface Props {
   onFinished: () => void;
 }
 
 export function IntroScreen({ onFinished }: Props) {
-  const player = useVideoPlayer(VIDEO_URL, (p) => {
+  const player = useVideoPlayer(VIDEO_SOURCE, (p) => {
     p.play();
   });
 
