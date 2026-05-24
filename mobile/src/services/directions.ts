@@ -1,6 +1,6 @@
 import type { LatLng } from 'react-native-maps';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GOOGLE_MAPS_API_KEY } from '../config/maps';
-import { tripsApi } from '../api/trips.api';
 
 // ── In-memory cache ───────────────────────────────────────────────────────────
 
@@ -53,10 +53,21 @@ function haversineKm(o: LatLng, d: LatLng): number {
 
 async function tryBackend(o: LatLng, d: LatLng): Promise<RouteInfo | null> {
   try {
-    const data = await tripsApi.getShortestPath(o.latitude, o.longitude, d.latitude, d.longitude);
+    // Use raw fetch — avoids the axios 401 interceptor that would wipe the auth token
+    const token = await AsyncStorage.getItem('auth_token');
+    const res = await fetch('https://autigres.fly.dev/api/graph/shortest-path', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ fromLat: o.latitude, fromLng: o.longitude, toLat: d.latitude, toLng: d.longitude }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
     if (!data.polyline?.length || data.polyline.length < 2) return null;
     return {
-      polyline:        data.polyline.map(p => ({ latitude: p.lat, longitude: p.lng })),
+      polyline:        data.polyline.map((p: { lat: number; lng: number }) => ({ latitude: p.lat, longitude: p.lng })),
       distanceKm:      data.totalDistanceMeters / 1000,
       durationMinutes: data.totalTimeSeconds / 60,
     };
@@ -138,7 +149,8 @@ export async function getRouteInfo(origin: LatLng, destination: LatLng): Promise
   const cached = cache.get(key);
   if (cached) return cached;
 
-  const result = (await tryOSRM(origin, destination))
+  const result = (await tryBackend(origin, destination))
+    ?? (await tryOSRM(origin, destination))
     ?? (await tryGoogle(origin, destination));
   if (result && result.polyline.length >= 2) {
     cache.set(key, result);

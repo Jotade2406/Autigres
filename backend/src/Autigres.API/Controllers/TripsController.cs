@@ -3,6 +3,7 @@ using Autigres.API.DTOs;
 using Autigres.Core.Entities;
 using Autigres.Core.Enums;
 using Autigres.Core.Exceptions;
+using Autigres.Core.Graph;
 using Autigres.Core.Interfaces.Repositories;
 using Autigres.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -19,6 +20,7 @@ public class TripsController : ControllerBase
     private readonly IPassengerRepository _passengerRepo;
     private readonly IUserRepository _userRepo;
     private readonly IMatchingService _matchingService;
+    private readonly IGraphService _graphService;
     private readonly IConfiguration _config;
     private readonly ILogger<TripsController> _logger;
 
@@ -27,6 +29,7 @@ public class TripsController : ControllerBase
         IPassengerRepository passengerRepo,
         IUserRepository userRepo,
         IMatchingService matchingService,
+        IGraphService graphService,
         IConfiguration config,
         ILogger<TripsController> logger)
     {
@@ -34,6 +37,7 @@ public class TripsController : ControllerBase
         _passengerRepo = passengerRepo;
         _userRepo = userRepo;
         _matchingService = matchingService;
+        _graphService = graphService;
         _config = config;
         _logger = logger;
     }
@@ -161,8 +165,12 @@ public class TripsController : ControllerBase
         if (!Guid.TryParse(uuid, out var guid))
             return BadRequest(new { message = "UUID inválido." });
 
+        var passenger = await GetCurrentPassengerAsync();
         var request = await _tripRepo.GetRequestByUuidAsync(guid)
                       ?? throw new NotFoundException("TripRequest", guid);
+
+        if (request.PassengerId != passenger.Id)
+            return Forbid();
 
         if (request.Status is not (TripRequestStatus.Pending or TripRequestStatus.Matching or TripRequestStatus.Matched))
             throw new DomainException("Solo se pueden cancelar solicitudes activas.");
@@ -268,7 +276,7 @@ public class TripsController : ControllerBase
                         ?? throw new NotFoundException("TripRequest", guid);
 
         if (!myRequest.IsPoolingAllowed || myRequest.Status != TripRequestStatus.Matched)
-            return Ok((NearbyPassengerDto?)null);
+            return Content("null", "application/json");
 
         var candidates = await _tripRepo.GetActivePoolingRequestsAsync();
 
@@ -284,7 +292,7 @@ public class TripsController : ControllerBase
             .OrderBy(x => x.PickupDist + x.DestDist)
             .FirstOrDefault();
 
-        if (best is null) return Ok((NearbyPassengerDto?)null);
+        if (best is null) return Content("null", "application/json");
 
         var name = $"{best.Request.Passenger.User.FirstName} {best.Request.Passenger.User.LastName}";
         return Ok(new NearbyPassengerDto(
@@ -334,7 +342,7 @@ public class TripsController : ControllerBase
                         ?? throw new NotFoundException("TripRequest", guid);
 
         var sr = await _tripRepo.GetPendingIncomingShareRequestAsync(myRequest.Id);
-        if (sr is null) return Ok((IncomingShareRequestDto?)null);
+        if (sr is null) return Content("null", "application/json");
 
         var name = $"{sr.RequesterRequest.Passenger.User.FirstName} {sr.RequesterRequest.Passenger.User.LastName}";
         return Ok(new IncomingShareRequestDto(
@@ -443,6 +451,40 @@ public class TripsController : ControllerBase
             await _tripRepo.UpdateShareRequestStatusAsync(sr.Id, ShareRequestStatus.Rejected);
 
         return NoContent();
+    }
+
+    /// <summary>GET /api/trips/{uuid}/route — Dijkstra polyline for tigrecito animation</summary>
+    [HttpGet("{uuid}/route")]
+    public async Task<ActionResult<ShortestPathResponse>> GetTripRoute(string uuid)
+    {
+        if (!Guid.TryParse(uuid, out var guid))
+            return BadRequest(new { message = "UUID inválido." });
+
+        var trip = await _tripRepo.GetByUuidAsync(guid)
+                   ?? throw new NotFoundException("Trip", guid);
+
+        var originNodeId = _graphService.ResolveNearestNode(trip.OriginLat, trip.OriginLng);
+        var destNodeId   = _graphService.ResolveNearestNode(trip.DestinationLat, trip.DestinationLng);
+
+        if (originNodeId is null || destNodeId is null)
+            return UnprocessableEntity(new { message = "No se encontró nodo cercano en el grafo." });
+
+        var result = _graphService.FindShortestPath(originNodeId.Value, destNodeId.Value);
+
+        if (!result.IsReachable)
+            return UnprocessableEntity(new { message = "No existe ruta entre los puntos dados." });
+
+        var polyline = result.NodePath
+            .Select(id => _graphService.GetNode(id))
+            .Where(n => n is not null)
+            .Select(n => new RouteCoordDto(n!.Lat, n!.Lng))
+            .ToList();
+
+        return Ok(new ShortestPathResponse(
+            result.TotalTimeSeconds,
+            result.TotalDistanceMeters,
+            0m,
+            polyline));
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────────

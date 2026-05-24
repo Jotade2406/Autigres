@@ -48,6 +48,10 @@ public class AuthController : ControllerBase
         if (existing is not null)
             return Conflict(new { message = "El correo ya está registrado." });
 
+        var byPhone = await _userRepo.GetByPhoneAsync(request.Phone);
+        if (byPhone is not null)
+            return Conflict(new { message = "El número de teléfono ya está registrado." });
+
         if (!Enum.TryParse<UserRole>(request.Role, ignoreCase: true, out var role)
             || role == UserRole.Admin)
             return BadRequest(new { message = "Rol inválido. Use 'passenger' o 'driver'." });

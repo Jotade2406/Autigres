@@ -227,7 +227,9 @@ export function MatchingScreen({ route, navigation }: Props) {
             setShareUuid(null);
           }
         }
-      } catch {}
+      } catch (e) {
+        if (__DEV__) console.error('[SharePoll]', e);
+      }
     };
 
     const interval = setInterval(poll, 2000);

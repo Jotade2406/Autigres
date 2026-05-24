@@ -47,10 +47,13 @@ export const tripsApi = {
       toLat: destLat,     toLng: destLng,
     }).then((r) => r.data),
 
+  getTripRoute: (uuid: string) =>
+    apiClient.get<ShortestPathDto>(`/trips/${uuid}/route`).then((r) => r.data),
+
   // ── Share requests ──────────────────────────────────────────────────────────
   getNearbyPartner: (requestUuid: string) =>
     apiClient.get<NearbyPassengerDto | null>(`/trips/requests/${requestUuid}/nearby`)
-      .then((r) => r.data ?? null),
+      .then((r) => r.data || null),
 
   createShareRequest: (myRequestUuid: string, targetRequestUuid: string) =>
     apiClient.post<ShareRequestCreatedDto>('/trips/share-requests', { myRequestUuid, targetRequestUuid })
@@ -62,7 +65,7 @@ export const tripsApi = {
 
   getIncomingShareRequest: (requestUuid: string) =>
     apiClient.get<IncomingShareRequestDto | null>(`/trips/share-requests/incoming?requestUuid=${requestUuid}`)
-      .then((r) => r.data ?? null),
+      .then((r) => r.data || null),
 
   acceptShareRequest: (shareUuid: string) =>
     apiClient.post<AcceptShareResponseDto>(`/trips/share-requests/${shareUuid}/accept`)

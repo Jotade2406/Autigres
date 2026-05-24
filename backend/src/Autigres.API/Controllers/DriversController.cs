@@ -59,13 +59,13 @@ public class DriversController : ControllerBase
     /// Returns null (200 OK with JSON null) when no trip is pending.
     /// </summary>
     [HttpGet("pending-trip")]
-    public async Task<ActionResult<TripResponse?>> GetPendingTrip()
+    public async Task<IActionResult> GetPendingTrip()
     {
         var trip = await _tripRepo.GetScheduledUnassignedAsync();
         if (trip is null)
         {
             _logger.LogDebug("[PendingTrip] No Scheduled unassigned trip found in the last 15 min");
-            return Ok((TripResponse?)null);
+            return Content("null", "application/json");
         }
         _logger.LogInformation(
             "[PendingTrip] Found trip: id={Id} uuid={Uuid} fare={Fare} createdAt={CreatedAt:HH:mm:ss}",
@@ -127,11 +127,11 @@ public class DriversController : ControllerBase
 
     /// <summary>GET /api/drivers/vehicle — get current driver's active vehicle (null if none)</summary>
     [HttpGet("vehicle")]
-    public async Task<ActionResult<VehicleResponse?>> GetVehicle()
+    public async Task<IActionResult> GetVehicle()
     {
         var driver  = await GetCurrentDriverAsync();
         var vehicle = driver.Vehicles.FirstOrDefault(v => v.IsActive);
-        if (vehicle is null) return Ok((VehicleResponse?)null);
+        if (vehicle is null) return Content("null", "application/json");
         return Ok(ToVehicleResponse(vehicle));
     }
 
@@ -358,7 +358,8 @@ public class DriversController : ControllerBase
             trip.DestinationLat,
             trip.DestinationLng,
             trip.PaymentMethod,
-            trip.ArrivedAt?.ToString("O"));
+            trip.ArrivedAt?.ToString("O"),
+            trip.ServiceTier ?? "economico");
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────────

@@ -9,8 +9,9 @@ import { StatusBar }    from 'expo-status-bar';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { LatLng } from 'react-native-maps';
 import { Phone, Info, QrCode, Banknote, X, Check } from 'lucide-react-native';
-import { AuMap }        from '../../components/map/AuMap';
-import { tripsApi }     from '../../api/trips.api';
+import { AuMap }             from '../../components/map/AuMap';
+import { TigrecitoLayer }    from '../../components/map/TigrecitoLayer';
+import { tripsApi }          from '../../api/trips.api';
 import { useTripStore } from '../../store/trip.store';
 import { getRouteInfo } from '../../services/directions';
 import { Colors }       from '../../theme/colors';
@@ -227,6 +228,8 @@ export function ActiveTripScreen({ route, navigation }: Props) {
 
   const [trip, setTrip]             = useState<TripResponseDto | null>(null);
   const [routePolyline, setRoutePolyline] = useState<LatLng[]>(paramPolyline ?? []);
+  const [tigrecitoPoly, setTigrecitoPoly]   = useState<LatLng[]>([]);
+  const [tigrecitoSecs, setTigrecitoSecs]   = useState(0);
   const [loading, setLoading]       = useState(true);
   const [showDetails, setShowDetails]   = useState(false);
   const [cancelling, setCancelling]     = useState(false);
@@ -293,7 +296,7 @@ export function ActiveTripScreen({ route, navigation }: Props) {
     return () => clearInterval(t);
   }, [tripUuid, handleTripData]);
 
-  // Real-road polyline
+  // Real-road polyline (OSRM fallback for background map)
   useEffect(() => {
     if (!trip) return;
     const { originLat, originLng, destinationLat, destinationLng } = trip;
@@ -303,6 +306,16 @@ export function ActiveTripScreen({ route, navigation }: Props) {
       { latitude: destinationLat, longitude: destinationLng },
     ).then(info => setRoutePolyline(info.polyline)).catch(() => {});
   }, [trip?.tripUuid]);
+
+  // Tigrecito route — fetched from our OSM Dijkstra backend when trip starts
+  useEffect(() => {
+    if (trip?.status !== 'in_progress' || tigrecitoPoly.length > 0) return;
+    tripsApi.getTripRoute(tripUuid).then(r => {
+      const poly = r.polyline.map(p => ({ latitude: p.lat, longitude: p.lng }));
+      setTigrecitoPoly(poly);
+      setTigrecitoSecs(Math.max(30, r.totalTimeSeconds));
+    }).catch(() => {});
+  }, [trip?.status, tripUuid, tigrecitoPoly.length]);
 
   // Action handlers
   const handleCall = () => {
@@ -367,7 +380,11 @@ export function ActiveTripScreen({ route, navigation }: Props) {
       <StatusBar style="light" />
 
       {/* Fullscreen map */}
-      <AuMap waypoints={trip.route} polyline={routePolyline} style={StyleSheet.absoluteFill} />
+      <AuMap waypoints={trip.route} polyline={routePolyline} style={StyleSheet.absoluteFill}>
+        {trip.status === 'in_progress' && tigrecitoPoly.length >= 2 && (
+          <TigrecitoLayer polyline={tigrecitoPoly} totalTimeSeconds={tigrecitoSecs} />
+        )}
+      </AuMap>
 
       {/* ── Floating Header ── */}
       {hasDriver && hasVehicle && (

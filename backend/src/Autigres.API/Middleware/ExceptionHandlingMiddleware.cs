@@ -1,4 +1,5 @@
 using Autigres.Core.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace Autigres.API.Middleware;
@@ -30,9 +31,11 @@ public class ExceptionHandlingMiddleware
     {
         var (statusCode, message) = exception switch
         {
-            NotFoundException nfe => (StatusCodes.Status404NotFound, nfe.Message),
-            DomainException de => (StatusCodes.Status400BadRequest, de.Message),
-            _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred.")
+            NotFoundException nfe    => (StatusCodes.Status404NotFound,   nfe.Message),
+            DomainException de       => (StatusCodes.Status400BadRequest,  de.Message),
+            DbUpdateException dbe when dbe.InnerException?.Message.Contains("Duplicate entry") == true
+                                     => (StatusCodes.Status409Conflict,    "Ya existe un registro con esos datos."),
+            _                        => (StatusCodes.Status500InternalServerError, "An unexpected error occurred.")
         };
 
         if (statusCode >= StatusCodes.Status500InternalServerError)

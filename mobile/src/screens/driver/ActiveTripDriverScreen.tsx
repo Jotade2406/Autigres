@@ -9,6 +9,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { LatLng }    from 'react-native-maps';
 import { Car, Users, Flag, QrCode, Banknote, XCircle, CheckCircle, Check, Crown } from 'lucide-react-native';
 import { AuMap }          from '../../components/map/AuMap';
+import { TigrecitoLayer } from '../../components/map/TigrecitoLayer';
 import { SwipeButton }    from '../../components/ui/SwipeButton';
 import { driversApi }     from '../../api/drivers.api';
 import { tripsApi }       from '../../api/trips.api';
@@ -151,6 +152,8 @@ export function ActiveTripDriverScreen({ route, navigation }: Props) {
   // Map route
   const [routePolyline, setRoutePolyline] = useState<LatLng[]>([]);
   const [mapWaypoints,  setMapWaypoints]  = useState<WaypointDto[]>([]);
+  const [tigrecitoPoly, setTigrecitoPoly] = useState<LatLng[]>([]);
+  const [tigrecitoSecs, setTigrecitoSecs] = useState(0);
 
   // Wait timer (per passenger UUID → arrival timestamp)
   const arrivedAtMap   = useRef<Map<string, number>>(new Map());
@@ -252,7 +255,18 @@ export function ActiveTripDriverScreen({ route, navigation }: Props) {
         etaTotalSecsRef.current = Math.round(info.durationMinutes * 60);
       }
     }).catch(() => {});
-  }, [trip?.tripUuid]); // only when trip changes identity
+  }, [trip?.tripUuid]);
+
+  // ── Tigrecito route (OSM Dijkstra) ────────────────────────────────────────
+
+  useEffect(() => {
+    if (trip?.status !== 'in_progress' || tigrecitoPoly.length > 0) return;
+    tripsApi.getTripRoute(tripUuid).then(r => {
+      const poly = r.polyline.map(p => ({ latitude: p.lat, longitude: p.lng }));
+      setTigrecitoPoly(poly);
+      setTigrecitoSecs(Math.max(30, r.totalTimeSeconds));
+    }).catch(() => {});
+  }, [trip?.status, tripUuid, tigrecitoPoly.length]);
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
@@ -336,7 +350,11 @@ export function ActiveTripDriverScreen({ route, navigation }: Props) {
         fitToCoords={routePolyline.length >= 2 ? routePolyline : undefined}
         fitPadding={MAP_PAD}
         style={StyleSheet.absoluteFill}
-      />
+      >
+        {isInProgress && tigrecitoPoly.length >= 2 && (
+          <TigrecitoLayer polyline={tigrecitoPoly} totalTimeSeconds={tigrecitoSecs} />
+        )}
+      </AuMap>
 
       {/* Bottom sheet */}
       <View style={[S.sheet, shadow('lg')]}>
