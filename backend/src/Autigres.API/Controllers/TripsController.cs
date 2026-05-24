@@ -324,7 +324,7 @@ public class TripsController : ControllerBase
             RequesterRequestId = myRequest.Id,
             TargetRequestId    = targetRequest.Id,
             CreatedAt          = DateTime.UtcNow,
-            ExpiresAt          = DateTime.UtcNow.AddSeconds(60),
+            ExpiresAt          = DateTime.UtcNow.AddSeconds(120),
         });
 
         return Ok(new ShareRequestCreatedDto(sr.Uuid.ToString()));

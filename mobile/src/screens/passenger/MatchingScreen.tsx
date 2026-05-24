@@ -51,6 +51,7 @@ type ShareState =
   | 'has-suggestion'
   | 'waiting'
   | 'rejected'
+  | 'expired'
   | 'acting';
 
 export function MatchingScreen({ route, navigation }: Props) {
@@ -223,7 +224,7 @@ export function MatchingScreen({ route, navigation }: Props) {
             return;
           }
           if (new Date(sr.expiresAt) < new Date()) {
-            setShareState('searching');
+            setShareState('expired');
             setShareUuid(null);
           }
         }
@@ -238,9 +239,9 @@ export function MatchingScreen({ route, navigation }: Props) {
   // intentionally excludes 'incoming' and goToActiveTripRef — both accessed via refs
   }, [shareState, shareUuid, requestUuid]);
 
-  // 'rejected' → back to searching after 3s
+  // 'rejected' / 'expired' → back to searching after 3s
   useEffect(() => {
-    if (shareState !== 'rejected') return;
+    if (shareState !== 'rejected' && shareState !== 'expired') return;
     const t = setTimeout(() => setShareState('searching'), 3000);
     return () => clearTimeout(t);
   }, [shareState]);
@@ -381,6 +382,18 @@ export function MatchingScreen({ route, navigation }: Props) {
             <Text style={[S.shareCardTitle, { color: T.error }]}>Solicitud rechazada</Text>
           </View>
           <Text style={S.shareCardSub}>El pasajero no quiso compartir. Seguimos buscando conductor.</Text>
+        </View>
+      );
+    }
+
+    if (shareState === 'expired') {
+      return (
+        <View style={[S.shareCard, shadow('lg')]}>
+          <View style={S.shareCardTitleRow}>
+            <X size={15} color={T.lo} strokeWidth={2} />
+            <Text style={[S.shareCardTitle, { color: T.mid }]}>La solicitud expiró</Text>
+          </View>
+          <Text style={S.shareCardSub}>El tiempo de espera venció. Seguimos buscando conductor.</Text>
         </View>
       );
     }
