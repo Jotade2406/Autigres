@@ -3,7 +3,7 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
 
 const VIDEO_URL =
-  'https://drive.google.com/uc?export=download&id=1eW2CItyukBJHxvtnhPf2IPMKahkyCCAB';
+  'https://drive.google.com/uc?export=download&id=1BR9h8A2V3UMDv1-umlsFByrJYvKbtVI6';
 
 interface Props {
   onFinished: () => void;
