@@ -40,6 +40,9 @@
         "projectId": "2d812477-b1e3-4891-b601-cad13feea317"
       }
     },
-    "owner": "juand2406"
+    "owner": "juand2406",
+    "plugins": [
+      "expo-video"
+    ]
   }
 }

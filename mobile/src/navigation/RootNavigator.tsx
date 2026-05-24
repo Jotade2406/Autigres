@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { useAuthStore } from '../store/auth.store';
 import { AuthNavigator }      from './AuthNavigator';
 import { PassengerNavigator } from './PassengerNavigator';
 import { DriverNavigator }    from './DriverNavigator';
+import { IntroScreen }        from '../screens/IntroScreen';
 import { Colors } from '../theme/colors';
 import { Typography } from '../theme/typography';
 
@@ -19,10 +20,13 @@ function SplashScreen() {
 
 export function RootNavigator() {
   const { isAuthenticated, isRestoring, user, restoreSession } = useAuthStore();
+  const [introShown, setIntroShown] = useState(false);
 
   useEffect(() => {
     restoreSession();
   }, [restoreSession]);
+
+  if (!introShown) return <IntroScreen onFinished={() => setIntroShown(true)} />;
 
   if (isRestoring) return <SplashScreen />;
 
