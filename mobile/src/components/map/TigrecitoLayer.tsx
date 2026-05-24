@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Text, View } from 'react-native';
 import { Marker, Polyline } from 'react-native-maps';
+import { NyanCatSprite } from './NyanCatSprite';
 import type { LatLng } from 'react-native-maps';
 
 // Rainbow trail palette — cycles per chunk of the traveled path
@@ -130,16 +130,14 @@ export function TigrecitoLayer({ polyline, totalTimeSeconds }: Props) {
         />
       ))}
 
-      {/* Tigrecito marker */}
+      {/* Nyan Cat marker */}
       <Marker
         coordinate={pos}
         anchor={{ x: 0.5, y: 0.5 }}
         tracksViewChanges
         flat
       >
-        <View>
-          <Text style={{ fontSize: 28, lineHeight: 32 }}>🐯</Text>
-        </View>
+        <NyanCatSprite />
       </Marker>
     </>
   );
