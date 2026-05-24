@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView,
+  View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Alert,
 } from 'react-native';
 import { SafeAreaView }   from 'react-native-safe-area-context';
 import { StatusBar }      from 'expo-status-bar';
@@ -111,8 +111,14 @@ export function ConfirmTripScreen({ route, navigation }: Props) {
         estimatedFare: displayFare ?? undefined,
         isShared: isShared,
       });
-    } catch {
+    } catch (err: unknown) {
       setLoading(false);
+      const status = (err as any)?.response?.status;
+      if (status === 401) {
+        Alert.alert('Sesión expirada', 'Tu sesión expiró. Volvé a iniciar sesión.');
+      } else {
+        Alert.alert('Error', 'No se pudo confirmar el viaje. Intentá de nuevo.');
+      }
     }
   };
 

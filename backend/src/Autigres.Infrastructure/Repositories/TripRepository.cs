@@ -123,7 +123,7 @@ public class TripRepository : ITripRepository
     // ── Requests ─────────────────────────────────────────────────────────────────
 
     public Task<TripRequest?> GetRequestByIdAsync(int id)
-        => _db.TripRequests.FirstOrDefaultAsync(r => r.Id == id);
+        => _db.TripRequests.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
 
     public Task<TripRequest?> GetRequestByUuidAsync(Guid uuid)
         => _db.TripRequests
