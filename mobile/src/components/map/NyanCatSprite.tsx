@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, View } from 'react-native';
 
-const FRAME_W     = 101;
-const FRAME_H     = 64;
-const FRAME_COUNT = 8;
-const FRAME_MS    = 100;
+const FRAME_W     = 117;
+const FRAME_H     = 72;
+const FRAME_COUNT = 12;
+const FRAME_MS    = 70;
 const SHEET_W     = FRAME_W * FRAME_COUNT;
 
 const SHEET = require('../../../assets/nyancat/nyancat_sheet.png');
@@ -21,7 +21,7 @@ export function NyanCatSprite() {
   }, []);
 
   return (
-    <View style={{ width: FRAME_W, height: FRAME_H, overflow: 'hidden' }}>
+    <View style={{ width: FRAME_W, height: FRAME_H, overflow: 'hidden', backgroundColor: 'transparent' }}>
       <Image
         source={SHEET}
         style={{
