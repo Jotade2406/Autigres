@@ -89,15 +89,15 @@ function GhostButton({ label, onPress, color = T.mid, loading = false, style }: 
 
 function AddressRow({ origin, destination }: { origin: string; destination: string }) {
   return (
-    <View style={S.routeRow}>
-      <View style={S.routeTrack}>
-        <View style={[S.routeDot, { backgroundColor: T.accent }]} />
-        <View style={S.routeLine} />
-        <View style={[S.routeDot, { backgroundColor: T.error }]} />
+    <View style={CS.routeRow}>
+      <View style={CS.routeTrack}>
+        <View style={[CS.dot, { backgroundColor: T.accent }]} />
+        <View style={CS.routeLine} />
+        <View style={[CS.dot, { backgroundColor: T.error }]} />
       </View>
-      <View style={S.routeAddresses}>
-        <Text style={S.addressText} numberOfLines={2}>{origin}</Text>
-        <Text style={S.addressText} numberOfLines={2}>{destination}</Text>
+      <View style={CS.routeAddresses}>
+        <Text style={CS.addr} numberOfLines={2}>{origin}</Text>
+        <Text style={CS.addr} numberOfLines={2}>{destination}</Text>
       </View>
     </View>
   );

@@ -308,7 +308,7 @@ const S = StyleSheet.create({
     paddingHorizontal: T.sm, paddingVertical: 8,
   },
   tagChipOn:  { borderColor: T.primary, backgroundColor: T.primaryDim },
-  tagLabel:   { fontSize: 13, fontWeight: '600', color: T.mid, whiteSpace: 'nowrap' as any },
+  tagLabel:   { fontSize: 13, fontWeight: '600', color: T.mid },
   tagLabelOn: { color: T.primary },
 
   submitBtn: {

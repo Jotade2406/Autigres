@@ -65,8 +65,10 @@ export interface TripResponseDto {
   passengers?: TripPassengerSummaryDto[];
   originLat: number;
   originLng: number;
+  originAddress?: string;
   destinationLat: number;
   destinationLng: number;
+  destinationAddress?: string;
   paymentMethod?: 'cash' | 'qr';
   arrivedAt?: string;
   serviceTier?: string;
